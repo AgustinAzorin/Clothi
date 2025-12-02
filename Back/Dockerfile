@@ -5,7 +5,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copiar package.json del Auth Service (y otros si agregas más microservicios)
-COPY auth_service/package*.json ./auth_service/
+COPY auth_service/package*.json ./src/auth_service/
 
 # Instalar dependencias
 RUN cd auth_service && npm install
