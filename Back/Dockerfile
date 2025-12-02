@@ -8,7 +8,7 @@ WORKDIR /app
 COPY src/auth_service/package*.json ./src/auth_service/
 
 # Instalar dependencias
-RUN cd auth_service && npm install
+RUN cd src/auth_service && npm install
 
 # Copiar todo el código
 COPY . .
