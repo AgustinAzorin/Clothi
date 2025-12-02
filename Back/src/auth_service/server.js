@@ -32,7 +32,7 @@ app.use("/api", router);
 
 // Redirección de la raíz a index.html
 app.get("/", (req, res) => {
-    res.redirect("../Public/index.html");
+    res.redirect("../../../Public/index.html");
 });
 
 // Usamos el puerto del entorno (del .env) o 3000 como fallback.
