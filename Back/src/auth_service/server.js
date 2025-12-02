@@ -21,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 
 // Servir archivos estáticos desde la carpeta 'public'
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../../Public')));
 
 // 2. Inicializa Redis *después* de que dotenv se haya ejecutado.
 // Usamos el nombre que le dimos a la importación: connectRedis
@@ -32,9 +32,11 @@ app.use("/api", router);
 
 // Redirección de la raíz a index.html
 app.get("/", (req, res) => {
-    res.redirect("../../Public/index.html");
+    res.redirect("/index.html");
 });
-
+app.use("/api/*", (req, res) => {
+    res.status(404).json({ error: "API route not found" });
+});
 // Usamos el puerto del entorno (del .env) o 3000 como fallback.
 const PORT = process.env.PORT || 3000;
 
