@@ -1,5 +1,5 @@
 // src/repositories/sessionRepository.js
-import Session from '../models/Session.js';
+import Session from '../models/session.js';
 import { Op } from 'sequelize';
 
 class SessionRepository {
