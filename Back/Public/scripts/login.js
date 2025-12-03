@@ -1,6 +1,6 @@
 class AuthFrontend {
     constructor() {
-        this.apiBaseUrl = 'https://clothi.online/';
+        this.apiBaseUrl = 'https://clothi.online';
         this.accessToken = localStorage.getItem('accessToken') || null;
         this.refreshToken = localStorage.getItem('refreshToken') || null;
         this.user = JSON.parse(localStorage.getItem('user')) || null;
