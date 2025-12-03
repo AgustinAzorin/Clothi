@@ -32,7 +32,7 @@ app.use("/api", router);
 
 // Redirección de la raíz a index.html
 app.get("/", (req, res) => {
-    res.redirect("/index.html");
+    res.redirect("/login.html");
 });
 app.use("/api/*", (req, res) => {
     res.status(404).json({ error: "API route not found" });
