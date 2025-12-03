@@ -3,6 +3,8 @@
 import bcrypt from 'bcrypt';
 import userProfileRepository from '../repositories/userProfileRepository.js';
 import userRoleRepository from '../repositories/userRoleRepository.js';
+import roleRepository from '../repositories/roleRepository.js';
+import sessionService from './sessionService.js'; // ← AÑADE
 
 class UserService {
 
@@ -10,7 +12,7 @@ class UserService {
     async createUser(data) {
         const { email, password, full_name, phone, genre, age, roles = [] } = data;
 
-        const existing = await userRepository.findByEmail(email);
+        const existing = await userProfileRepository.findByEmail(email);
         if (existing) {
             const err = new Error("Email is already in use");
             err.status = 400;
@@ -20,7 +22,7 @@ class UserService {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Crear usuario en "auth.users" (Supabase table)
-        const user = await userRepository.create({
+        const user = await userProfileRepository.create({
             email,
             password: hashedPassword
         });
@@ -55,7 +57,7 @@ class UserService {
 
     // Login (sin generar token)
     async validateCredentials(email, password) {
-        const user = await userRepository.findByEmail(email);
+        const user = await userProfileRepository.findByEmail(email);
         if (!user) {
             const err = new Error("Invalid email or password");
             err.status = 401;
@@ -74,7 +76,7 @@ class UserService {
 
     // Obetener usuario + perfil + roles
     async getUserById(userId) {
-        const user = await userRepository.findById(userId);
+        const user = await userProfileRepository.findById(userId);
         if (!user) {
             const err = new Error("User not found");
             err.status = 404;
@@ -89,26 +91,13 @@ class UserService {
 
     // Actualizar datos del usuario
     async updateUser(userId, data) {
-        const updated = await userRepository.update(userId, data);
+        const updated = await userProfileRepository.update(userId, data);
         const profile = await userProfileRepository.updateProfile(userId, data);
 
         return {
             updatedUser: updated,
             updatedProfile: profile
         };
-    }
-
-    // Asignar nuevo rol
-    async assignRole(userId, roleName) {
-        let role = await roleRepository.findByName(roleName);
-
-        if (!role) {
-            role = await roleRepository.create({ name: roleName });
-        }
-
-        await userRoleRepository.assignRole(userId, role.id);
-
-        return { message: "Role assigned successfully" };
     }
 
     // Quitar un rol
@@ -135,13 +124,13 @@ class UserService {
     async deleteUser(userId) {
         await userProfileRepository.deleteProfile(userId);
         await userRoleRepository.deleteUserRoles(userId);
-        await userRepository.delete(userId);
+        await userProfileRepository.delete(userId);
 
         return { message: "User deleted successfully" };
     }
         // Método nuevo: Cambiar contraseña
     async updatePassword(userId, oldPassword, newPassword) {
-        const user = await userRepository.findById(userId);
+        const user = await userProfileRepository.findById(userId);
         if (!user) {
             const err = new Error("User not found");
             err.status = 404;
@@ -160,7 +149,7 @@ class UserService {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         
         // Actualizar contraseña
-        await userRepository.update(userId, { password: hashedPassword });
+        await userProfileRepository.update(userId, { password: hashedPassword });
 
         // Invalidar todas las sesiones del usuario por seguridad
         await sessionService.invalidateAllForUser(userId);
@@ -225,8 +214,8 @@ class UserService {
         const offset = (page - 1) * limit;
 
         // Lógica para obtener usuarios con filtros
-        const users = await userRepository.findAll({ limit, offset, role });
-        const total = await userRepository.count({ role });
+        const users = await userProfileRepository.findAll({ limit, offset, role });
+        const total = await userProfileRepository.count({ role });
 
         return {
             users,
@@ -241,10 +230,10 @@ class UserService {
 
     // Método adicional: Buscar usuarios por email o nombre
     async searchUsers(searchTerm) {
-        return await userRepository.search(searchTerm);
+        return await userProfileRepository.search(searchTerm);
     }
     async getUserByEmail(email) {
-        const user = await userRepository.findByEmail(email);
+        const user = await userProfileRepository.findByEmail(email);
         if (!user) {
             const err = new Error("User not found");
             err.status = 404;
