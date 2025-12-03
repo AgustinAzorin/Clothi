@@ -20,19 +20,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Servir archivos estáticos desde la carpeta 'public'
-app.use(express.static(path.join(__dirname, '../../Public/pages')));
-
 // 2. Inicializa Redis *después* de que dotenv se haya ejecutado.
 // Usamos el nombre que le dimos a la importación: connectRedis
 const redisClient = connectRedis(); 
 
-// Rutas
+// Servir archivos del frontend
+const frontendPath = path.join(__dirname, '../../../Public');
+console.log(`Serving frontend from: ${frontendPath}`);
+
+app.use(express.static(frontendPath));
+
+// API routes
 app.use("/api", router);
 
-// Redirección de la raíz a index.html
-app.get("/", (req, res) => {
-    res.redirect("/login.html");
+// Rutas para SPA (Single Page Application)
+app.get(["/", "/login", "/signup"], (req, res) => {
+    res.sendFile(path.join(frontendPath, '/pages/index.html'));
 });
 app.use("/api/*", (req, res) => {
     res.status(404).json({ error: "API route not found" });
