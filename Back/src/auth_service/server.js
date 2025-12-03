@@ -17,22 +17,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Calcular rutas base
-const projectRoot = path.join(__dirname, '../../'); // Va hasta el directorio raíz
+// Calcular rutas - desde server.js hasta la raíz del proyecto
+const projectRoot = path.join(__dirname, '../../../'); // Back/src/auth_service → ../../../ → raíz
 const publicPath = path.join(projectRoot, 'Public');
 
 console.log('📁 Directorios:');
-console.log('  - server.js en:', __dirname);
+console.log('  - server.js:', __dirname);
 console.log('  - Raíz del proyecto:', projectRoot);
 console.log('  - Carpeta Public:', publicPath);
 
-// Servir archivos estáticos desde diferentes carpetas
-app.use(express.static(publicPath)); // Sirve todo en Public/
+// Servir archivos estáticos DESDE Public, pero SIN /Public en la URL
+app.use(express.static(publicPath)); // Esto hace que / → Public/
 
-// Rutas específicas para organizar mejor
-app.use('/pages', express.static(path.join(publicPath, 'pages')));    // HTML
-app.use('/css', express.static(path.join(publicPath, 'css')));        // CSS
-app.use('/js', express.static(path.join(publicPath, 'scripts')));     // JS (scripts)
+// Rutas específicas para archivos en subcarpetas
+app.use('/css', express.static(path.join(publicPath, 'css')));      // /css → Public/css/
+app.use('/js', express.static(path.join(publicPath, 'scripts')));   // /js → Public/scripts/
 
 // Inicializa Redis
 const redisClient = connectRedis(); 
@@ -40,7 +39,7 @@ const redisClient = connectRedis();
 // Rutas de API
 app.use("/api", router);
 
-// Redirección de la raíz a login.html
+// Redirección de la raíz
 app.get("/", (req, res) => {
     res.sendFile(path.join(publicPath, 'pages', 'login.html'));
 });
@@ -50,7 +49,7 @@ app.get("/login", (req, res) => {
     res.sendFile(path.join(publicPath, 'pages', 'login.html'));
 });
 
-// Ruta para signup (si tienes signup.html)
+// Ruta para signup
 app.get("/signup", (req, res) => {
     res.sendFile(path.join(publicPath, 'pages', 'signup.html'));
 });
@@ -68,26 +67,29 @@ app.get("*.html", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, async () => {
-    console.log(`🚀 Servidor iniciado en puerto ${PORT}...`);
-    console.log(`📁 Archivos estáticos desde: ${publicPath}`);
-    console.log(`🌐 URLs disponibles:`);
-    console.log(`   • Frontend: http://localhost:${PORT}`);
-    console.log(`   • Login: http://localhost:${PORT}/login`);
-    console.log(`   • API: http://localhost:${PORT}/api`);
+    console.log(`🚀 Servidor en puerto ${PORT}`);
+    console.log(`📁 Public path: ${publicPath}`);
+    console.log(`🌐 URLs:`);
+    console.log(`   • http://localhost:${PORT}/`);
+    console.log(`   • http://localhost:${PORT}/login`);
+    console.log(`   • http://localhost:${PORT}/signup`);
+    console.log(`   • http://localhost:${PORT}/api/*`);
+    console.log(`   • http://localhost:${PORT}/css/style.css`);
+    console.log(`   • http://localhost:${PORT}/js/app.js`);
     
     try {
         await sequelize.authenticate();
-        console.log("🟢 Base de datos conectada exitosamente.");
+        console.log("🟢 DB conectada");
     } catch (err) {
-        console.error("🔴 Error en DB:", err.message);
+        console.error("🔴 DB Error:", err.message);
     }
 
     if (redisClient) {
         try {
             await redisClient.ping();
-            console.log("🔴 Redis conectado exitosamente.");
+            console.log("🔴 Redis conectado");
         } catch (err) {
-            console.error("🔴 Error en Redis:", err.message);
+            console.error("🔴 Redis Error:", err.message);
         }
     }
 });
