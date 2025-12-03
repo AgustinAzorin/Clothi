@@ -1,173 +1,175 @@
-// src/services/userService.js
-
 import bcrypt from 'bcrypt';
+import userRepository from '../repositories/userRepository.js';
 import userProfileRepository from '../repositories/userProfileRepository.js';
 import userRoleRepository from '../repositories/userRoleRepository.js';
 import roleRepository from '../repositories/roleRepository.js';
-import sessionService from './sessionService.js'; // ← AÑADE
+// import sessionService from './sessionService.js'; // Descomenta cuando lo tengas
 
 class UserService {
-
-    // Crear usuario + perfil + roles opcionales
+    // Crear usuario + perfil + roles
     async createUser(data) {
-        const { email, password, full_name, phone, genre, age, roles = [] } = data;
+        const { email, password, full_name, phone, genre, age, roles = ['user'] } = data;
 
-        const existing = await userProfileRepository.findByEmail(email);
-        if (existing) {
-            const err = new Error("Email is already in use");
-            err.status = 400;
-            throw err;
+        // Validaciones básicas
+        if (!email || !password) {
+            throw { message: "Email and password are required", status: 400 };
         }
 
+        // Verificar email único
+        const existing = await userRepository.findByEmail(email);
+        if (existing) {
+            throw { message: "Email is already in use", status: 400 };
+        }
+
+        // Hashear contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Crear usuario en "auth.users" (Supabase table)
-        const user = await userProfileRepository.create({
+        // 1. Crear usuario en auth.users
+        const user = await userRepository.create({
             email,
             password: hashedPassword
         });
 
-        // Crear perfil en "auth_service.user_profiles"
+        // 2. Crear perfil en user_profiles
         await userProfileRepository.createProfile({
             id: user.id,
-            full_name,
-            phone,
-            genre,
-            age
+            full_name: full_name || null,
+            phone: phone || null,
+            genre: genre || null,
+            age: age || null
         });
 
-        // Crear roles si vienen
-        if (roles.length > 0) {
-            for (const roleName of roles) {
-                let role = await roleRepository.findByName(roleName);
-
-                if (!role) {
-                    role = await roleRepository.create({ name: roleName });
-                }
-
-                await userRoleRepository.assignRole(user.id, role.id);
-            }
+        // 3. Asignar roles
+        for (const roleName of roles) {
+            await this.assignRole(user.id, roleName);
         }
 
         return {
-            user,
+            user: {
+                id: user.id,
+                email: user.email,
+                created_at: user.created_at
+            },
             profile: await userProfileRepository.getProfileByUserId(user.id)
         };
     }
 
-    // Login (sin generar token)
+    // Validar credenciales (login)
     async validateCredentials(email, password) {
-        const user = await userProfileRepository.findByEmail(email);
+        const user = await userRepository.findByEmail(email);
         if (!user) {
-            const err = new Error("Invalid email or password");
-            err.status = 401;
-            throw err;
+            throw { message: "Invalid email or password", status: 401 };
         }
 
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
-            const err = new Error("Invalid email or password");
-            err.status = 401;
-            throw err;
+            throw { message: "Invalid email or password", status: 401 };
         }
 
-        return user;
+        return {
+            id: user.id,
+            email: user.email
+        };
     }
 
-    // Obetener usuario + perfil + roles
+    // Obtener usuario completo
     async getUserById(userId) {
-        const user = await userProfileRepository.findById(userId);
+        const user = await userRepository.findById(userId);
         if (!user) {
-            const err = new Error("User not found");
-            err.status = 404;
-            throw err;
+            throw { message: "User not found", status: 404 };
         }
 
         const profile = await userProfileRepository.getProfileByUserId(userId);
         const roles = await userRoleRepository.getRolesByUser(userId);
 
-        return { user, profile, roles };
-    }
-
-    // Actualizar datos del usuario
-    async updateUser(userId, data) {
-        const updated = await userProfileRepository.update(userId, data);
-        const profile = await userProfileRepository.updateProfile(userId, data);
-
         return {
-            updatedUser: updated,
-            updatedProfile: profile
+            user: {
+                id: user.id,
+                email: user.email,
+                created_at: user.created_at
+            },
+            profile,
+            roles
         };
     }
 
-    // Quitar un rol
-    async removeRole(userId, roleName) {
-        const role = await roleRepository.findByName(roleName);
-        if (!role) {
-            const err = new Error("Role not found");
-            err.status = 404;
-            throw err;
+    // Obtener usuario por email
+    async getUserByEmail(email) {
+        const user = await userRepository.findByEmail(email);
+        if (!user) {
+            throw { message: "User not found", status: 404 };
+        }
+        
+        return {
+            id: user.id,
+            email: user.email
+        };
+    }
+
+    // Actualizar usuario y/o perfil
+    async updateUser(userId, data) {
+        // Separar campos de usuario y perfil
+        const userFields = {};
+        const profileFields = {};
+
+        if (data.email !== undefined) userFields.email = data.email;
+        // NOTA: La contraseña se cambia con updatePassword()
+
+        if (data.full_name !== undefined) profileFields.full_name = data.full_name;
+        if (data.phone !== undefined) profileFields.phone = data.phone;
+        if (data.genre !== undefined) profileFields.genre = data.genre;
+        if (data.age !== undefined) profileFields.age = data.age;
+        if (data.avatar_url !== undefined) profileFields.avatar_url = data.avatar_url;
+
+        // Actualizar solo si hay campos
+        let updatedUser = null;
+        if (Object.keys(userFields).length > 0) {
+            updatedUser = await userRepository.update(userId, userFields);
         }
 
-        await userRoleRepository.removeRole(userId, role.id);
+        let updatedProfile = null;
+        if (Object.keys(profileFields).length > 0) {
+            updatedProfile = await userProfileRepository.updateProfile(userId, profileFields);
+        }
 
-        return { message: "Role removed successfully" };
+        return {
+            updatedUser,
+            updatedProfile: updatedProfile || await userProfileRepository.getProfileByUserId(userId)
+        };
     }
 
-    // Obtener permisos totales (roles → permissions)
-    async getUserPermissions(userId) {
-        const permissions = await userRoleRepository.getUserPermissions(userId);
-        return permissions;
-    }
-
-    // Eliminar usuario y todo lo relacionado
-    async deleteUser(userId) {
-        await userProfileRepository.deleteProfile(userId);
-        await userRoleRepository.deleteUserRoles(userId);
-        await userProfileRepository.delete(userId);
-
-        return { message: "User deleted successfully" };
-    }
-        // Método nuevo: Cambiar contraseña
+    // Cambiar contraseña
     async updatePassword(userId, oldPassword, newPassword) {
-        const user = await userProfileRepository.findById(userId);
+        const user = await userRepository.findById(userId);
         if (!user) {
-            const err = new Error("User not found");
-            err.status = 404;
-            throw err;
+            throw { message: "User not found", status: 404 };
         }
 
         // Verificar contraseña actual
         const isValid = await bcrypt.compare(oldPassword, user.password);
         if (!isValid) {
-            const err = new Error("Current password is incorrect");
-            err.status = 401;
-            throw err;
+            throw { message: "Current password is incorrect", status: 401 };
         }
 
-        // Hashear nueva contraseña
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        
-        // Actualizar contraseña
-        await userProfileRepository.update(userId, { password: hashedPassword });
+        // Validar nueva contraseña
+        if (newPassword.length < 6) {
+            throw { message: "Password must be at least 6 characters", status: 400 };
+        }
 
-        // Invalidar todas las sesiones del usuario por seguridad
-        await sessionService.invalidateAllForUser(userId);
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await userRepository.update(userId, { password: hashedPassword });
+
+        // Invalidar sesiones (descomenta cuando tengas sessionService)
+        // await sessionService.invalidateAllForUser(userId);
 
         return { success: true };
     }
 
-    // Método nuevo: Obtener roles del usuario
-    async getUserRoles(userId) {
-        const roles = await userRoleRepository.getRolesByUser(userId);
-        return roles;
-    }
-
-    // Actualizar método assignRole para aceptar roleId o roleName
+    // ASIGNAR ROL (versión única)
     async assignRole(userId, roleIdentifier) {
         let role;
         
-        // Verificar si es UUID (roleId) o string (roleName)
+        // Verificar si es UUID o nombre
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roleIdentifier);
         
         if (isUUID) {
@@ -177,16 +179,20 @@ class UserService {
         }
 
         if (!role) {
-            const err = new Error("Role not found");
-            err.status = 404;
-            throw err;
+            throw { message: "Role not found", status: 404 };
+        }
+
+        // Verificar si ya tiene el rol
+        const existing = await userRoleRepository.hasRole(userId, role.id);
+        if (existing) {
+            return { message: "User already has this role", role };
         }
 
         await userRoleRepository.assignRole(userId, role.id);
         return { message: "Role assigned successfully", role };
     }
 
-    // Actualizar método removeRole para aceptar roleId o roleName
+    // REMOVER ROL (versión única)
     async removeRole(userId, roleIdentifier) {
         let role;
         
@@ -199,23 +205,30 @@ class UserService {
         }
 
         if (!role) {
-            const err = new Error("Role not found");
-            err.status = 404;
-            throw err;
+            throw { message: "Role not found", status: 404 };
         }
 
         await userRoleRepository.removeRole(userId, role.id);
         return { message: "Role removed successfully" };
     }
 
-    // Método adicional útil: Listar todos los usuarios
+    // Obtener roles del usuario
+    async getUserRoles(userId) {
+        return await userRoleRepository.getRolesByUser(userId);
+    }
+
+    // Obtener permisos del usuario
+    async getUserPermissions(userId) {
+        return await userRoleRepository.getUserPermissions(userId);
+    }
+
+    // Listar usuarios con paginación
     async getAllUsers(options = {}) {
         const { page = 1, limit = 20, role } = options;
         const offset = (page - 1) * limit;
 
-        // Lógica para obtener usuarios con filtros
-        const users = await userProfileRepository.findAll({ limit, offset, role });
-        const total = await userProfileRepository.count({ role });
+        const users = await userRepository.findAll({ limit, offset, role });
+        const total = await userRepository.count({ role });
 
         return {
             users,
@@ -228,18 +241,23 @@ class UserService {
         };
     }
 
-    // Método adicional: Buscar usuarios por email o nombre
+    // Buscar usuarios
     async searchUsers(searchTerm) {
-        return await userProfileRepository.search(searchTerm);
+        return await userRepository.search(searchTerm);
     }
-    async getUserByEmail(email) {
-        const user = await userProfileRepository.findByEmail(email);
-        if (!user) {
-            const err = new Error("User not found");
-            err.status = 404;
-            throw err;
-        }
-        return user;
+
+    // Eliminar usuario completamente
+    async deleteUser(userId) {
+        // 1. Eliminar perfil
+        await userProfileRepository.deleteProfile(userId);
+        
+        // 2. Eliminar relaciones de roles
+        await userRoleRepository.deleteUserRoles(userId);
+        
+        // 3. Eliminar usuario
+        await userRepository.delete(userId);
+
+        return { message: "User deleted successfully" };
     }
 }
 

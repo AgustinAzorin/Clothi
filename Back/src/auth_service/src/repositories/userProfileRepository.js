@@ -1,9 +1,7 @@
-// src/repositories/userProfileRepository.js
 import UserProfile from '../models/userProfile.js';
 
 class UserProfileRepository {
-
-    // Crear un perfil (se usa al crear usuario)
+    // Crear un perfil
     async createProfile(data) {
         return await UserProfile.create(data);
     }
@@ -17,13 +15,14 @@ class UserProfileRepository {
 
     // Actualizar solo los campos del perfil
     async updateProfile(userId, data) {
-        const fieldsToUpdate = {
-            full_name: data.full_name,
-            avatar_url: data.avatar_url,
-            phone: data.phone,
-            genre: data.genre,
-            age: data.age
-        };
+        // Solo campos permitidos del perfil
+        const fieldsToUpdate = {};
+        
+        if (data.full_name !== undefined) fieldsToUpdate.full_name = data.full_name;
+        if (data.phone !== undefined) fieldsToUpdate.phone = data.phone;
+        if (data.genre !== undefined) fieldsToUpdate.genre = data.genre;
+        if (data.age !== undefined) fieldsToUpdate.age = data.age;
+        if (data.avatar_url !== undefined) fieldsToUpdate.avatar_url = data.avatar_url;
 
         await UserProfile.update(fieldsToUpdate, {
             where: { id: userId }
@@ -38,57 +37,16 @@ class UserProfileRepository {
             where: { id: userId }
         });
     }
-    async findAll({ limit, offset, role }) {
-        const query = {
-            limit,
-            offset,
-            include: [
-                {
-                    model: UserProfile,
-                    as: 'profile'
-                }
-            ]
-        };
 
-        if (role) {
-            query.include.push({
-                model: Role,
-                where: { name: role },
-                through: { attributes: [] }
-            });
-        }
-
-        return await User.findAll(query);
-    }
-
-    async count({ role }) {
-        const query = {};
-
-        if (role) {
-            query.include = [{
-                model: Role,
-                where: { name: role }
-            }];
-        }
-
-        return await User.count(query);
-    }
-
-    async search(searchTerm) {
-        return await User.findAll({
-            include: [{
-                model: UserProfile,
-                as: 'profile',
-                where: {
-                    [Op.or]: [
-                        { full_name: { [Op.iLike]: `%${searchTerm}%` } },
-                        { email: { [Op.iLike]: `%${searchTerm}%` } }
-                    ]
-                }
-            }]
+    // Buscar perfiles por nombre
+    async searchByFullName(name) {
+        const { Op } = require('sequelize');
+        return await UserProfile.findAll({
+            where: {
+                full_name: { [Op.iLike]: `%${name}%` }
+            }
         });
     }
-
 }
 
 export default new UserProfileRepository();
