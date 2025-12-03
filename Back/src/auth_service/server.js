@@ -21,19 +21,8 @@ app.use(cors());
 app.use(express.json());
 
 // Servir archivos estáticos desde la carpeta 'public'
-const publicRoot = path.join(__dirname, '../../Public');
+app.use(express.static(path.join(__dirname, '../../Public/pages')));
 
-// 1. HTML desde /pages
-app.use(express.static(path.join(publicRoot, 'pages')));
-
-// 2. CSS desde /css (accesible como /css/style.css)
-app.use('/css', express.static(path.join(publicRoot, 'css')));
-
-// 3. JS desde /scripts (accesible como /js/app.js)
-app.use('/js', express.static(path.join(publicRoot, 'scripts')));
-
-// También servir directamente desde Public/ si hay otros archivos
-app.use(express.static(publicRoot));
 // 2. Inicializa Redis *después* de que dotenv se haya ejecutado.
 // Usamos el nombre que le dimos a la importación: connectRedis
 const redisClient = connectRedis(); 
