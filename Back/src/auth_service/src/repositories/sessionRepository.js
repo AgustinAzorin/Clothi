@@ -46,6 +46,29 @@ class SessionRepository {
             }
         );
     }
+        // Obtener todas las sesiones (activas e inactivas)
+    async findAllByUserId(userId) {
+        return await db.query(
+            'SELECT * FROM sessions WHERE user_id = $1 ORDER BY created_at DESC',
+            [userId]
+        );
+    }
+
+    // Invalidar otras sesiones excepto la actual
+    async invalidateOtherSessions(userId, currentSessionId) {
+        return await db.query(
+            'UPDATE sessions SET is_valid = false WHERE user_id = $1 AND id != $2 AND is_valid = true',
+            [userId, currentSessionId]
+        );
+    }
+
+    // Eliminar completamente una sesión
+    async delete(sessionId) {
+        return await db.query(
+            'DELETE FROM sessions WHERE id = $1',
+            [sessionId]
+        );
+    }
 }
 
 export default new SessionRepository();

@@ -36,7 +36,7 @@ app.get("/", (req, res) => {
 });
 app.use("/api/*", (req, res) => {
     res.status(404).json({ error: "API route not found" });
-});
+}); 
 // Usamos el puerto del entorno (del .env) o 3000 como fallback.
 const PORT = process.env.PORT || 3000;
 
