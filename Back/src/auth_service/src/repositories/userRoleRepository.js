@@ -74,6 +74,9 @@ class UserRoleRepository {
             where: { user_id: userId }
         });
     }
+        async findById(roleId) {
+        return await Role.findByPk(roleId);
+    }
 }
 
 export default new UserRoleRepository();

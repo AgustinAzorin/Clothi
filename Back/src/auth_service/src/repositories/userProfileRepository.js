@@ -38,6 +38,57 @@ class UserProfileRepository {
             where: { id: userId }
         });
     }
+    async findAll({ limit, offset, role }) {
+        const query = {
+            limit,
+            offset,
+            include: [
+                {
+                    model: UserProfile,
+                    as: 'profile'
+                }
+            ]
+        };
+
+        if (role) {
+            query.include.push({
+                model: Role,
+                where: { name: role },
+                through: { attributes: [] }
+            });
+        }
+
+        return await User.findAll(query);
+    }
+
+    async count({ role }) {
+        const query = {};
+
+        if (role) {
+            query.include = [{
+                model: Role,
+                where: { name: role }
+            }];
+        }
+
+        return await User.count(query);
+    }
+
+    async search(searchTerm) {
+        return await User.findAll({
+            include: [{
+                model: UserProfile,
+                as: 'profile',
+                where: {
+                    [Op.or]: [
+                        { full_name: { [Op.iLike]: `%${searchTerm}%` } },
+                        { email: { [Op.iLike]: `%${searchTerm}%` } }
+                    ]
+                }
+            }]
+        });
+    }
+
 }
 
 export default new UserProfileRepository();
