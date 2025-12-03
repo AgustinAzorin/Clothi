@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import 'dotenv/config'; // 1. Carga las variables de entorno primero
 import express from "express";
 import cors from "cors";
 import router from "./src/routes/index.js";
@@ -6,9 +6,12 @@ import sequelize from "./src/config/supabase.js";
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Importaciones para manejar __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// -- CAMBIO CRUCIAL --
+// Ahora importamos la función por defecto, y podemos darle cualquier nombre (ej. 'connectRedis')
 import connectRedis from "./src/config/redis.js"; 
 
 const app = express();
@@ -17,77 +20,56 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Calcular rutas - desde server.js hasta la raíz del proyecto
-const projectRoot = path.join(__dirname, '../../../'); // Back/src/auth_service → ../../../ → raíz
-const publicPath = path.join(projectRoot, 'Public');
+// Servir archivos estáticos desde la carpeta 'public'
+const publicRoot = path.join(__dirname, '../../Public');
 
-console.log('📁 Directorios:');
-console.log('  - server.js:', __dirname);
-console.log('  - Raíz del proyecto:', projectRoot);
-console.log('  - Carpeta Public:', publicPath);
+// 1. HTML desde /pages
+app.use(express.static(path.join(publicRoot, 'pages')));
 
-// Servir archivos estáticos DESDE Public, pero SIN /Public en la URL
-app.use(express.static(publicPath)); // Esto hace que / → Public/
+// 2. CSS desde /css (accesible como /css/style.css)
+app.use('/css', express.static(path.join(publicRoot, 'css')));
 
-// Rutas específicas para archivos en subcarpetas
-app.use('/css', express.static(path.join(publicPath, 'css')));      // /css → Public/css/
-app.use('/js', express.static(path.join(publicPath, 'scripts')));   // /js → Public/scripts/
+// 3. JS desde /scripts (accesible como /js/app.js)
+app.use('/js', express.static(path.join(publicRoot, 'scripts')));
 
-// Inicializa Redis
+// También servir directamente desde Public/ si hay otros archivos
+app.use(express.static(publicRoot));
+// 2. Inicializa Redis *después* de que dotenv se haya ejecutado.
+// Usamos el nombre que le dimos a la importación: connectRedis
 const redisClient = connectRedis(); 
 
-// Rutas de API
+// Rutas
 app.use("/api", router);
 
-// Redirección de la raíz
+// Redirección de la raíz a index.html
 app.get("/", (req, res) => {
-    res.sendFile(path.join(publicPath, 'pages', 'login.html'));
+    res.redirect("/login.html");
 });
-
-// Ruta específica para login
-app.get("/login", (req, res) => {
-    res.sendFile(path.join(publicPath, 'pages', 'login.html'));
-});
-
-// Ruta para signup
-app.get("/signup", (req, res) => {
-    res.sendFile(path.join(publicPath, 'pages', 'signup.html'));
-});
-
-// API 404
 app.use("/api/*", (req, res) => {
     res.status(404).json({ error: "API route not found" });
-});
-
-// Para cualquier otra ruta HTML, redirigir a login
-app.get("*.html", (req, res) => {
-    res.sendFile(path.join(publicPath, 'pages', 'login.html'));
-});
-
+}); 
+// Usamos el puerto del entorno (del .env) o 3000 como fallback.
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, async () => {
-    console.log(`🚀 Servidor en puerto ${PORT}`);
-    console.log(`📁 Public path: ${publicPath}`);
-    console.log(`🌐 URLs:`);
-    console.log(`   • http://localhost:${PORT}/`);
-    console.log(`   • http://localhost:${PORT}/login`);
-    console.log(`   • http://localhost:${PORT}/signup`);
-    console.log(`   • http://localhost:${PORT}/api/*`);
-    console.log(`   • http://localhost:${PORT}/css/style.css`);
-    console.log(`   • http://localhost:${PORT}/js/app.js`);
+    console.log(`🚀 Server starting on port ${PORT}...`);
     
     try {
         await sequelize.authenticate();
-        console.log("🟢 DB conectada");
+        console.log("🟢 DB Connected successfully.");
     } catch (err) {
         console.error("🔴 DB Error:", err.message);
     }
 
+    console.log(`✨ Auth service running on port ${PORT}`);
+    
+    // Ahora, si usas redisClient en alguna parte, estará inicializado correctamente.
+    
+    // Verificación de conexión a Redis (opcional)
     if (redisClient) {
         try {
             await redisClient.ping();
-            console.log("🔴 Redis conectado");
+            console.log("🔴 Redis Connected successfully.");
         } catch (err) {
             console.error("🔴 Redis Error:", err.message);
         }
