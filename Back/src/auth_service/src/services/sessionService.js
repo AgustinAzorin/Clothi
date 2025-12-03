@@ -3,13 +3,15 @@ import sessionRepository from "../repositories/sessionRepository.js";
 
 class SessionService {
     async createSession({ userId, device, ipAddress, userAgent }) {
-        return await sessionRepository.create({
-            user_id: userId,
-            device,
-            ip_address: ipAddress,
-            user_agent: userAgent
-        });
-    }
+    return await sessionRepository.create({
+        user_id: userId,
+        device: device || 'unknown',
+        ip_address: ipAddress || 'unknown',
+        user_agent: userAgent || 'unknown',
+        is_valid: true,
+        invalidated_at: null
+    });
+}
 
     async getActiveSessionsByUser(userId) {
         return await sessionRepository.findActiveByUserId(userId);

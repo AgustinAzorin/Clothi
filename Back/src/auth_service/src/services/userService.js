@@ -244,6 +244,15 @@ class UserService {
     async searchUsers(searchTerm) {
         return await userRepository.search(searchTerm);
     }
+    async getUserByEmail(email) {
+        const user = await userRepository.findByEmail(email);
+        if (!user) {
+            const err = new Error("User not found");
+            err.status = 404;
+            throw err;
+        }
+        return user;
+    }
 }
 
 export default new UserService();

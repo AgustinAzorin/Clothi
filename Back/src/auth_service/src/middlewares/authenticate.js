@@ -1,14 +1,47 @@
+// middlewares/authenticate.js
 import jwt from "jsonwebtoken";
+import authService from "../services/authService.js";
+import redisClient from "../config/redis.js";
 
-export default (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ error: "No token provided" });
+export default async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ 
+                ok: false,
+                error: "No token provided" 
+            });
+        }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch {
-    return res.status(401).json({ error: "Invalid token" });
-  }
+        const token = authHeader.split(" ")[1];
+        
+        // Guardar token en request para logout
+        req.token = token;
+
+        // Verificar si el token está blacklisted
+        const isBlacklisted = await redisClient.get(`blacklist:${token}`);
+        if (isBlacklisted) {
+            return res.status(401).json({ 
+                ok: false,
+                error: "Token has been invalidated" 
+            });
+        }
+
+        // Verificar y decodificar token
+        const decoded = authService.verifyAccessToken(token);
+        
+        // Añadir información del usuario al request
+        req.user = {
+            id: decoded.userId || decoded.sub,
+            email: decoded.email,
+            ...decoded
+        };
+
+        next();
+    } catch (err) {
+        return res.status(401).json({ 
+            ok: false,
+            error: err.message || "Invalid or expired token"
+        });
+    }
 };
