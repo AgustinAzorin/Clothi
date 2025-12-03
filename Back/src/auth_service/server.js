@@ -35,7 +35,7 @@ app.use("/api", router);
 
 // Rutas para SPA (Single Page Application)
 app.get(["/", "/login", "/signup"], (req, res) => {
-    res.sendFile(path.join(frontendPath, '/pages/index.html'));
+    res.sendFile(path.join(frontendPath, '/pages/login.html'));
 });
 app.use("/api/*", (req, res) => {
     res.status(404).json({ error: "API route not found" });
