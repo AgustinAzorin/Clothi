@@ -1,7 +1,4 @@
 // middlewares/authenticate.js
-import jwt from "jsonwebtoken";
-import authService from "../services/authService.js";
-import redisClient from "../config/redis.js";
 import tokenService from "../services/tokenService.js";
 
 export default async (req, res, next) => {
@@ -33,7 +30,7 @@ export default async (req, res, next) => {
         
         // Añadir información del usuario al request
         req.user = {
-            id: decoded.sub,
+            id: decoded.userId || decoded.sub,
             email: decoded.email,
             ...decoded
         };

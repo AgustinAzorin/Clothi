@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth System - Prueba</title>
+    <link rel="stylesheet" href="../styles/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-lock"></i> Sistema de Autenticación</h1>
+            <p class="subtitle">Prueba de endpoints del backend</p>
+        </header>
+
+        <div class="app-container">
+            <!-- Estado de autenticación -->
+            <div class="auth-status" id="authStatus">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">No autenticado</span>
+                <div class="user-info" id="userInfo" style="display: none;">
+                    | ID: <span id="userId"></span>
+                    | Email: <span id="userEmail"></span>
+                </div>
+            </div>
+
+            <!-- Formularios -->
+            <div class="forms-container">
+                <!-- Login Form -->
+                <div class="form-card" id="loginForm">
+                    <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
+                    <form id="loginFormElement">
+                        <div class="form-group">
+                            <label for="loginEmail"><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="loginEmail" placeholder="usuario@ejemplo.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword"><i class="fas fa-key"></i> Contraseña</label>
+                            <input type="password" id="loginPassword" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                        </button>
+                        <button type="button" class="btn btn-link" id="showSignup">
+                            ¿No tienes cuenta? Regístrate
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Signup Form -->
+                <div class="form-card" id="signupForm" style="display: none;">
+                    <h2><i class="fas fa-user-plus"></i> Registro</h2>
+                    <form id="signupFormElement">
+                        <div class="form-group">
+                            <label for="signupEmail"><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="signupEmail" placeholder="usuario@ejemplo.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signupPassword"><i class="fas fa-key"></i> Contraseña</label>
+                            <input type="password" id="signupPassword" placeholder="Mínimo 6 caracteres" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signupFullName"><i class="fas fa-user"></i> Nombre Completo</label>
+                            <input type="text" id="signupFullName" placeholder="Juan Pérez">
+                        </div>
+                        <div class="form-group">
+                            <label for="signupPhone"><i class="fas fa-phone"></i> Teléfono</label>
+                            <input type="tel" id="signupPhone" placeholder="+54 11 1234-5678">
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-user-plus"></i> Crear Cuenta
+                        </button>
+                        <button type="button" class="btn btn-link" id="showLogin">
+                            ¿Ya tienes cuenta? Inicia Sesión
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Acciones después de login -->
+            <div class="actions-container" id="actionsContainer" style="display: none;">
+                <h3><i class="fas fa-cogs"></i> Acciones Disponibles</h3>
+                <div class="actions-grid">
+                    <button class="action-btn" id="getUserInfoBtn">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Obtener Info Usuario</span>
+                    </button>
+                    <button class="action-btn" id="getSessionsBtn">
+                        <i class="fas fa-list"></i>
+                        <span>Ver Mis Sesiones</span>
+                    </button>
+                    <button class="action-btn" id="refreshTokenBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Refrescar Token</span>
+                    </button>
+                    <button class="action-btn btn-danger" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Cerrar Sesión</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Consola de logs -->
+            <div class="console-container">
+                <h3><i class="fas fa-terminal"></i> Consola de Respuestas</h3>
+                <div class="console" id="console">
+                    <div class="log-entry">Sistema listo. Las respuestas del backend aparecerán aquí.</div>
+                </div>
+                <div class="console-controls">
+                    <button class="btn btn-small" id="clearConsole">
+                        <i class="fas fa-trash"></i> Limpiar Consola
+                    </button>
+                    <div class="api-url">
+                        <span>API Base: </span>
+                        <input type="text" id="apiBaseUrl" value="http://localhost:3000/api">
+                        <button class="btn btn-small" id="updateApiUrl">
+                            <i class="fas fa-sync"></i> Actualizar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de tokens -->
+            <div class="tokens-container" id="tokensContainer" style="display: none;">
+                <h3><i class="fas fa-shield-alt"></i> Tokens (solo desarrollo)</h3>
+                <div class="token-display">
+                    <div class="token-item">
+                        <label>Access Token:</label>
+                        <div class="token-value" id="accessTokenDisplay">No disponible</div>
+                    </div>
+                    <div class="token-item">
+                        <label>Refresh Token:</label>
+                        <div class="token-value" id="refreshTokenDisplay">No disponible</div>
+                    </div>
+                </div>
+                <div class="token-actions">
+                    <button class="btn btn-small" id="toggleTokens">
+                        <i class="fas fa-eye"></i> Mostrar/Ocultar Tokens
+                    </button>
+                    <button class="btn btn-small btn-warning" id="copyAccessToken">
+                        <i class="fas fa-copy"></i> Copiar Access Token
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer con información -->
+        <footer>
+            <div class="endpoints-info">
+                <h4><i class="fas fa-network-wired"></i> Endpoints disponibles:</h4>
+                <ul>
+                    <li><code>POST /auth/signup</code> - Registrar usuario</li>
+                    <li><code>POST /auth/login</code> - Iniciar sesión</li>
+                    <li><code>POST /auth/logout</code> - Cerrar sesión</li>
+                    <li><code>GET /auth/me</code> - Info usuario</li>
+                    <li><code>POST /auth/refresh</code> - Refrescar token</li>
+                    <li><code>GET /api/sessions</code> - Sesiones activas</li>
+                </ul>
+            </div>
+            <div class="footer-note">
+                <p><i class="fas fa-info-circle"></i> Este frontend es para pruebas del sistema de autenticación.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="../scripts/login.js"></script>
+</body>
+</html>

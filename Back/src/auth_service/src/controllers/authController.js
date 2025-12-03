@@ -193,6 +193,25 @@ class AuthController {
             });
         }
     }
+    async me(req, res) {
+    try {
+        // Ya tenemos req.user del middleware authenticate
+        res.json({
+            ok: true,
+            data: {
+                id: req.user.id,
+                email: req.user.email,
+                // Puedes agregar más info si necesitas
+            }
+        });
+    } catch (err) {
+        const status = err.status || 500;
+        res.status(status).json({ 
+            ok: false, 
+            error: err.message 
+        });
+    }
+}
 }
 
 export default new AuthController();
