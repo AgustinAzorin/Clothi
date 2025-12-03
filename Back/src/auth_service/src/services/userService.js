@@ -1,7 +1,6 @@
 // src/services/userService.js
 
 import bcrypt from 'bcrypt';
-import userRepository from '../repositories/userRepository.js';
 import userProfileRepository from '../repositories/userProfileRepository.js';
 import userRoleRepository from '../repositories/userRoleRepository.js';
 
