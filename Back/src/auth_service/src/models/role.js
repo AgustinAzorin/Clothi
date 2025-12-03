@@ -28,16 +28,4 @@ Role.associate = (models) => {
 
 
 
-// UserRole.js (añade al final)
-UserRole.associate = (models) => {
-    UserRole.belongsTo(models.User, {
-        foreignKey: 'user_id',
-        as: 'user'
-    });
-    UserRole.belongsTo(models.Role, {
-        foreignKey: 'role_id',
-        as: 'role'
-    });
-};
-
 export default Role;
