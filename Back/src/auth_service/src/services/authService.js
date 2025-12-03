@@ -3,12 +3,13 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import redisClient from '../config/redis.js';
-import nodemailer from 'nodemailer'; // Necesitarás instalar nodemailer
+import nodemailer from 'nodemailer';
 
 import userService from './userService.js';
 import sessionService from './sessionService.js';
 
 class AuthService {
+    
     // Crear un usuario desde cero
     async signup(data) {
         const user = await userService.createUser(data);
@@ -38,18 +39,15 @@ class AuthService {
         await sessionService.createSession({
             userId: user.id,
             device: agent.device || 'unknown',
-            ipAddress: agent.ip || req?.ip || 'unknown',
+            ipAddress: agent.ip || 'unknown', // CORREGIDO: quitado req?.ip
             userAgent: agent.ua || agent.userAgent || 'unknown'
         });
 
         return {
             userId: user.id,
+            email: user.email,
             accessToken,
-            refreshToken,
-            user: {
-                id: user.id,
-                email: user.email
-            }
+            refreshToken
         };
     }
 
@@ -62,15 +60,12 @@ class AuthService {
         if (sessionId) {
             await sessionService.invalidateSession(sessionId);
         } else {
-            // Buscar y invalidar la sesión actual basada en el token
-            // Esto requiere que tengas una forma de relacionar token con sessionId
-            // Por ahora invalidamos todas las sesiones del usuario para seguridad
+            // Invalidar todas las sesiones para seguridad
             await sessionService.invalidateAllForUser(userId);
         }
 
-        // También podrías añadir el token a una blacklist
-        const tokenKey = `blacklist:${token}`;
-        await redisClient.set(tokenKey, '1', { EX: 3600 }); // 1 hora
+        // Añadir token a blacklist
+        await redisClient.set(`blacklist:${token}`, '1', { EX: 3600 });
 
         return { message: "Logged out successfully" };
     }
@@ -118,7 +113,7 @@ class AuthService {
 
     // Forgot password
     async forgotPassword(email) {
-        const user = await userService.getUserByEmail(email); // Necesitas este método
+        const user = await userService.getUserByEmail(email);
         if (!user) {
             // Por seguridad, no revelamos si el email existe
             return { message: "If the email exists, a reset link will be sent" };
@@ -138,9 +133,8 @@ class AuthService {
             { EX: 3600 }
         );
 
-        // Enviar email (configura tu transporte de email)
+        // Enviar email
         const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-        
         await this.sendPasswordResetEmail(user.email, resetUrl);
 
         return { message: "Password reset email sent" };
@@ -175,13 +169,9 @@ class AuthService {
         return { message: "Password updated successfully" };
     }
 
-    // Verificar access token
+    // Verificar access token (para middleware)
     verifyAccessToken(token) {
         try {
-            // Verificar si está en la blacklist
-            // Esto requeriría chequear Redis en cada verificación
-            // Podrías optimizar cacheando en memoria por un tiempo corto
-            
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             return decoded;
         } catch (err) {
@@ -191,7 +181,7 @@ class AuthService {
         }
     }
 
-    // Verificar si token está blacklisted
+    // Verificar si token está blacklisted (para middleware)
     async isTokenBlacklisted(token) {
         const blacklisted = await redisClient.get(`blacklist:${token}`);
         return !!blacklisted;
@@ -216,7 +206,13 @@ class AuthService {
     }
 
     async sendPasswordResetEmail(email, resetUrl) {
-        // Configurar transporte de email según tu proveedor
+        // Modo desarrollo: solo loguear URL
+        if (process.env.NODE_ENV !== 'production' && !process.env.SMTP_HOST) {
+            console.log(`[DEV] Password reset URL for ${email}: ${resetUrl}`);
+            return;
+        }
+
+        // Modo producción: enviar email real
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: process.env.SMTP_PORT,

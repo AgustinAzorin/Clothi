@@ -1,22 +1,22 @@
+// src/services/tokenService.js (versión mínima)
 import jwt from "jsonwebtoken";
-import redis from "../config/redis.js";
+import redisClient from "../config/redis.js";
 
 export default {
-  generateTokens(user) {
-    const access = jwt.sign(
-      { sub: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: "15m" }
-    );
+    // Solo los métodos que necesita el middleware
+    verifyAccessToken(token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            return decoded;
+        } catch (err) {
+            const error = new Error("Invalid or expired token");
+            error.status = 401;
+            throw error;
+        }
+    },
 
-    const refresh = jwt.sign(
-      { sub: user.id },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    redis.set(`refresh:${user.id}`, refresh);
-
-    return { access, refresh };
-  }
+    async isTokenBlacklisted(token) {
+        const blacklisted = await redisClient.get(`blacklist:${token}`);
+        return !!blacklisted;
+    }
 };

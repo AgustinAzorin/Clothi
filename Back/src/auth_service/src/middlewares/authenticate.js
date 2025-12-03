@@ -2,6 +2,7 @@
 import jwt from "jsonwebtoken";
 import authService from "../services/authService.js";
 import redisClient from "../config/redis.js";
+import tokenService from "../services/tokenService.js";
 
 export default async (req, res, next) => {
     try {
@@ -19,7 +20,7 @@ export default async (req, res, next) => {
         req.token = token;
 
         // Verificar si el token está blacklisted
-        const isBlacklisted = await redisClient.get(`blacklist:${token}`);
+        const isBlacklisted = await tokenService.isTokenBlacklisted(token);
         if (isBlacklisted) {
             return res.status(401).json({ 
                 ok: false,
@@ -28,11 +29,11 @@ export default async (req, res, next) => {
         }
 
         // Verificar y decodificar token
-        const decoded = authService.verifyAccessToken(token);
+        const decoded = tokenService.verifyAccessToken(token);
         
         // Añadir información del usuario al request
         req.user = {
-            id: decoded.userId || decoded.sub,
+            id: decoded.sub,
             email: decoded.email,
             ...decoded
         };
