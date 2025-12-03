@@ -26,26 +26,7 @@ Role.associate = (models) => {
     });
 };
 
-// Permission.js (añade al final)
-Permission.associate = (models) => {
-    Permission.belongsToMany(models.Role, {
-        through: models.RolePermission,
-        foreignKey: 'permission_id',
-        as: 'roles'
-    });
-};
 
-// RolePermission.js (añade al final)
-RolePermission.associate = (models) => {
-    RolePermission.belongsTo(models.Role, {
-        foreignKey: 'role_id',
-        as: 'role'
-    });
-    RolePermission.belongsTo(models.Permission, {
-        foreignKey: 'permission_id',
-        as: 'permission'
-    });
-};
 
 // UserRole.js (añade al final)
 UserRole.associate = (models) => {

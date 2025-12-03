@@ -32,4 +32,13 @@ const Permission = sequelize.define("Permission", {
     updatedAt: false
 });
 
+// Permission.js (añade al final)
+Permission.associate = (models) => {
+    Permission.belongsToMany(models.Role, {
+        through: models.RolePermission,
+        foreignKey: 'permission_id',
+        as: 'roles'
+    });
+};
+
 export default Permission;
