@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY apps/api/package*.json ./apps/api/
 
-RUN npm install --production --workspaces
+RUN npm install
 
 # Copiar el resto del código
 COPY . .
