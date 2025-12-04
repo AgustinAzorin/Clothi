@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Op } = require('sequelize');
 const { baseFields } = require('../shared/baseModel');
 
 module.exports = (sequelize) => {
@@ -61,29 +61,29 @@ module.exports = (sequelize) => {
       {
         unique: true,
         fields: ['user_id', 'product_id'],
-        where: { product_id: { [sequelize.Op.ne]: null } }
+        where: { product_id: { [Op.ne]: null } }
       },
       {
         unique: true,
         fields: ['user_id', 'outfit_id'],
-        where: { outfit_id: { [sequelize.Op.ne]: null } }
+        where: { outfit_id: { [Op.ne]: null } }
       },
       {
         unique: true,
         fields: ['user_id', 'post_id'],
-        where: { post_id: { [sequelize.Op.ne]: null } }
+        where: { post_id: { [Op.ne]: null } }
       },
       {
         fields: ['product_id'],
-        where: { product_id: { [sequelize.Op.ne]: null } }
+        where: { product_id: { [Op.ne]: null } }
       },
       {
         fields: ['outfit_id'],
-        where: { outfit_id: { [sequelize.Op.ne]: null } }
+        where: { outfit_id: { [Op.ne]: null } }
       },
       {
         fields: ['post_id'],
-        where: { post_id: { [sequelize.Op.ne]: null } }
+        where: { post_id: { [Op.ne]: null } }
       }
     ]
   });
