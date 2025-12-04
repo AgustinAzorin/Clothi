@@ -3,18 +3,29 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*"
   ],
   "scripts": {
     "dev": "docker-compose up",
-    "build": "docker-compose up --build",
+    "dev:build": "docker-compose up --build",
     "down": "docker-compose down",
     "logs": "docker-compose logs -f",
+    
     "install:all": "npm install",
-    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules"
+    "install:workspaces": "npm install --workspaces",
+    
+    "build": "docker build -t clothi-api .",
+    "start": "node apps/api/src/server.js",
+    
+    "db:migrate": "npm run db:migrate --workspace=apps/api",
+    "db:seed": "npm run db:seed --workspace=apps/api",
+    "db:setup": "npm run db:setup --workspace=apps/api"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }

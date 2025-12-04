@@ -1,39 +1,17 @@
-# Development stage
-FROM node:18-alpine AS development
+# apps/api/Dockerfile - Para desarrollo local
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copiar solo package.json
+# Copiar package.json de la API
 COPY package*.json ./
 
 # Instalar dependencias
 RUN npm install
 
-# Copiar el código
+# Copiar código
 COPY . .
 
+# Puerto y comando
 EXPOSE 3001
-
 CMD ["npm", "run", "dev"]
-
-# Production stage
-FROM node:18-alpine AS production
-
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-COPY package*.json ./
-
-# Instalar solo dependencias de producción
-RUN npm ci --only=production
-
-# Copiar el código
-COPY . .
-
-# Cambiar a usuario no-root por seguridad
-USER node
-
-EXPOSE 3001
-
-CMD ["node", "src/server.js"]
