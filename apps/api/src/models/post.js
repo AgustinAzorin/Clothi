@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Op } = require('sequelize');
 const { baseFields } = require('../shared/baseModel');
 const { PostVisibility } = require('../shared/enums');
 
@@ -45,28 +45,19 @@ module.exports = (sequelize) => {
         }
       }
     },
-    // Engagement stats
     like_count: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
-      validate: {
-        min: 0
-      }
+      validate: { min: 0 }
     },
     comment_count: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
-      validate: {
-        min: 0
-      }
+      validate: { min: 0 }
     },
     share_count: {
       type: DataTypes.INTEGER,
-      defaultValue: 0,
-      validate: {
-        min: 0
-      }
-    },
+      defaultValue: 0 },
     visibility: {
       type: DataTypes.ENUM(...Object.values(PostVisibility)),
       defaultValue: PostVisibility.PUBLIC
@@ -75,23 +66,16 @@ module.exports = (sequelize) => {
     tableName: 'posts',
     hooks: {
       beforeValidate: (post) => {
-        // Validar que tenga al menos contenido o media
-        if (!post.content && (!post.media_urls || post.media_urls.length === 0)) {
+        if (!post.content &&
+            (!post.media_urls || post.media_urls.length === 0)) {
           throw new Error('Post debe tener contenido o al menos una imagen');
         }
       }
     },
     indexes: [
-      {
-        fields: ['user_id']
-      },
-      {
-        fields: ['outfit_id'],
-        where: { outfit_id: { [sequelize.Op.ne]: null } }
-      },
-      {
-        fields: ['created_at']
-      }
+      { fields: ['user_id'] },
+      { fields: ['outfit_id'], where: { outfit_id: { [Op.ne]: null } } },
+      { fields: ['created_at'] }
     ]
   });
 
