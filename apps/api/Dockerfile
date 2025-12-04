@@ -1,17 +1,24 @@
-# apps/api/Dockerfile - Para desarrollo local
+# Dockerfile en RAÍZ del proyecto
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Copiar package.json de la API
+# 1. Copiar package.json de la raíz
 COPY package*.json ./
 
-# Instalar dependencias
-RUN npm install
+# 2. Instalar dependencias de producción
+RUN npm ci --only=production
 
-# Copiar código
-COPY . .
+# 3. Copiar código fuente
+COPY src/ ./src/
+COPY uploads/ ./uploads/            
+# 4. Instalar sequelize-cli globalmente
+RUN npm install -g sequelize-cli
 
-# Puerto y comando
+# 5. Puerto
 EXPOSE 3001
-CMD ["npm", "run", "start"]
+ENV PORT=3001
+ENV NODE_ENV=production
+
+# 6. Comando para producción
+CMD ["sh", "-c", "npx sequelize-cli db:migrate && node src/server.js"]

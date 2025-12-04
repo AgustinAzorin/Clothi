@@ -1,25 +1,17 @@
-# Dockerfile para Render - VERSIÓN CORREGIDA
+# apps/api/Dockerfile - Para desarrollo local
 FROM node:18-alpine
 
 WORKDIR /app
 
-# 1. Copiar SOLO lo necesario de la API
-COPY apps/api/package*.json ./package.json
+# Copiar package.json de la API
+COPY package*.json ./
 
-# 2. Instalar dependencias de producción
-RUN npm ci --only=production
+# Instalar dependencias
+RUN npm install
 
-# 3. Copiar código de la API
-COPY apps/api/src ./src
-COPY apps/api/uploads ./uploads            
+# Copiar código
+COPY . .
 
-# 4. Instalar sequelize-cli GLOBALMENTE
-RUN npm install -g sequelize-cli
-
-# 5. Variables de entorno
-ENV NODE_ENV=production
-ENV PORT=3001
+# Puerto y comando
 EXPOSE 3001
-
-# 6. Comando CORREGIDO
-CMD ["sh", "-c", "npx sequelize-cli db:migrate && node src/server.js"]
+CMD ["npm", "run", "start"]
