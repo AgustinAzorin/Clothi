@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
-const { baseFields } = require('./shared/baseModel');
-const { PostVisibility } = require('./shared/enums');
+const { baseFields } = require('../shared/baseModel');
+const { PostVisibility } = require('../shared/enums');
 
 module.exports = (sequelize) => {
   const Post = sequelize.define('Post', {

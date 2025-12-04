@@ -21,18 +21,18 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 });
 
 // Importar todos los modelos
-const UserProfile = require('./UserProfile')(sequelize, Sequelize);
-const Product = require('./Product')(sequelize, Sequelize);
-const ProductAsset = require('./ProductAsset')(sequelize, Sequelize);
-const Category = require('./Category')(sequelize, Sequelize);
-const Outfit = require('./Outfit')(sequelize, Sequelize);
-const OutfitItem = require('./OutfitItem')(sequelize, Sequelize);
-const Post = require('./Post')(sequelize, Sequelize);
-const Like = require('./Like')(sequelize, Sequelize);
-const Comment = require('./Comment')(sequelize, Sequelize);
-const Follow = require('./Follow')(sequelize, Sequelize);
-const Order = require('./Order')(sequelize, Sequelize);
-const OrderItem = require('./OrderItem')(sequelize, Sequelize);
+const UserProfile = require('./userProfile')(sequelize, Sequelize);
+const Product = require('./product')(sequelize, Sequelize);
+const ProductAsset = require('./productAsset')(sequelize, Sequelize);
+const Category = require('./category')(sequelize, Sequelize);
+const Outfit = require('./outfit')(sequelize, Sequelize);
+const OutfitItem = require('./outfitItem')(sequelize, Sequelize);
+const Post = require('./post')(sequelize, Sequelize);
+const Like = require('./like')(sequelize, Sequelize);
+const Comment = require('./comment')(sequelize, Sequelize);
+const Follow = require('./follow')(sequelize, Sequelize);
+const Order = require('./order')(sequelize, Sequelize);
+const OrderItem = require('./orderItem')(sequelize, Sequelize);
 
 // Configurar relaciones
 require('./associations')({

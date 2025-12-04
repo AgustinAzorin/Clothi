@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
-const { baseFields } = require('./shared/baseModel');
-const { baseOptions } = require('./shared/baseModel');
+const { baseFields } = require('../shared/baseModel');
+const { baseOptions } = require('../shared/baseModel');
 
 module.exports = (sequelize) => {
   const UserProfile = sequelize.define('UserProfile', {

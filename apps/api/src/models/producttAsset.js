@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
-const { baseFields } = require('./shared/baseModel');
-const { AssetType } = require('./shared/enums');
+const { baseFields } = require('../shared/baseModel');
+const { AssetType } = require('../shared/enums');
 
 module.exports = (sequelize) => {
   const ProductAsset = sequelize.define('ProductAsset', {
