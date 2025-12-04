@@ -1,54 +1,38 @@
-# Clothi Root Dockerfile - Para Render.com
-# Este archivo construye TODO el monorepo
+# Clothi API - Dockerfile para Render.com
+# Este archivo construye SOLO la API (sin docker-compose)
 
-FROM node:18-alpine AS builder
+FROM node:18-alpine
 
 WORKDIR /app
 
-# 1. Copiar archivos de configuración del monorepo
+# 1. Copiar package.json de la raíz
 COPY package*.json ./
-COPY .npmrc ./
 
-# 2. Copiar configuración de workspaces
+# 2. Copiar package.json de la API
 COPY apps/api/package*.json ./apps/api/
-COPY apps/web/package*.json ./apps/web/  # Si existe
 
-# 3. Instalar dependencias RAÍZ
-RUN npm ci
+# 3. Instalar dependencias de la raíz (si hay)
+RUN npm ci --only=production || true
 
-# 4. Instalar dependencias de cada workspace
-RUN npm run install --workspace=apps/api
-# RUN npm run install --workspace=apps/web  # Cuando exista
-
-# 5. Copiar código fuente
-COPY . .
-
-# 6. Construir API
+# 4. Instalar dependencias de la API
 WORKDIR /app/apps/api
-RUN npm run build || echo "No build script, continuando..."
+RUN npm ci --only=production
 
-# 7. Stage de producción
-FROM node:18-alpine AS production
-
+# 5. Copiar código de la API
 WORKDIR /app
+COPY apps/api ./apps/api
 
-ENV NODE_ENV=production
+# 6. Instalar sequelize-cli globalmente para migraciones
+RUN npm install -g sequelize-cli
 
-# 8. Copiar solo lo necesario para producción
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/apps/api/package*.json ./apps/api/
+# 7. Crear directorio para uploads
+RUN mkdir -p /app/apps/api/uploads
 
-# 9. Instalar solo producción en raíz
-RUN npm ci --only=production --workspaces
-
-# 10. Copiar código construido
-COPY --from=builder /app/apps/api ./apps/api
-COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
-
-# 11. Variables para Render
+# 8. Puerto y variables
 EXPOSE 3001
 ENV PORT=3001
+ENV NODE_ENV=production
 
-# 12. Comando para Render (solo API)
+# 9. Comando para Render
 WORKDIR /app/apps/api
-CMD ["node", "src/server.js"]
+CMD ["sh", "-c", "npx sequelize-cli db:migrate && node src/server.js"]
