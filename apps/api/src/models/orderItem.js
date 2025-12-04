@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { baseFields } = require(',./shared/baseModel');
+const { baseFields } = require('../shared/baseModel');
 
 module.exports = (sequelize) => {
   const OrderItem = sequelize.define('OrderItem', {
