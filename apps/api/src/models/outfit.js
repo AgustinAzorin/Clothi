@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { baseFields } = require('../shared/baseModel');
-const { OutfitVisibility } = require('./shared/enums');
+const { OutfitVisibility } = require('../shared/enums');
 
 module.exports = (sequelize) => {
   const Outfit = sequelize.define('Outfit', {
