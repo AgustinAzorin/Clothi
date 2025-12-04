@@ -11,7 +11,6 @@ RUN npm ci --only=production
 
 # 3. Copiar código fuente
 COPY src/ ./src/
-COPY uploads/ ./uploads/            
 # 4. Instalar sequelize-cli globalmente
 RUN npm install -g sequelize-cli
 
