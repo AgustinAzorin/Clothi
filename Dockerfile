@@ -1,26 +1,25 @@
+# Dockerfile para monorepo en Render
 FROM node:18-alpine
 
 WORKDIR /app
 
-# 1. Copiar package.json de la raíz
-COPY package*.json ./
-COPY apps/api/package*.json ./apps/api/
+# Copiar SOLO lo necesario de la API
+COPY apps/api/package*.json ./package.json
 
-# 2. Instalar TODAS las dependencias (incluyendo devDependencies)
-# Porque necesitamos sequelize-cli para migraciones
-RUN npm ci
+# Instalar dependencias
+RUN npm ci --only=production
 
-# 3. Copiar código
-COPY . .
+# Copiar código de la API
+COPY apps/api/src ./src
+COPY apps/api/uploads ./uploads
 
-# 4. Instalar sequelize-cli globalmente (para migraciones)
+# Instalar sequelize-cli
 RUN npm install -g sequelize-cli
 
-# 5. Puerto
-EXPOSE 3001
-ENV PORT=3001
+# Variables
 ENV NODE_ENV=production
+ENV PORT=3001
+EXPOSE 3001
 
-# 6. Comando CORREGIDO para producción
-WORKDIR /app/apps/api
+# Comando
 CMD ["sh", "-c", "npx sequelize-cli db:migrate && node src/server.js"]
