@@ -3,18 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node apps/api/src/server.js",
-    "dev": "cd apps/api && npm run dev",
-    
-    "build": "echo 'Build hecho por Docker'",
+    "start": "cd apps/api && node src/server.js",
+    "dev": "cd apps/api && node src/server.js",
     
     "db:migrate": "cd apps/api && npx sequelize-cli db:migrate",
     "db:seed": "cd apps/api && npx sequelize-cli db:seed:all",
     "db:setup": "npm run db:migrate && npm run db:seed"
   },
-  "devDependencies": {},
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }
