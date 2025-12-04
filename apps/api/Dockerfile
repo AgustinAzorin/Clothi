@@ -23,9 +23,6 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# Instalar todas las dependencias
-RUN npm ci
-
 COPY . .
 
 # Construir la aplicación
