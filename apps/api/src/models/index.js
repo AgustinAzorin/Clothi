@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-const { baseOptions } = require('./shared/baseModel');
+const { baseOptions } = require('../shared/baseModel');
 
 // Configuración de Sequelize para Supabase
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
