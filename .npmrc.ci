@@ -1,0 +1,21 @@
+# clothi/.npmrc.ci
+# Para pipelines de CI/CD
+
+registry=https://registry.npmjs.org/
+NODE_ENV=test
+
+# Cache para CI
+cache=${RUNNER_TEMP}/.npm
+
+# Sin interacción
+yes=true
+
+# Reportar vulnerabilidades pero no fallar
+audit=true
+audit-level=moderate
+
+# Para tests
+ci=true
+
+# Token para private registry (si usas)
+//registry.npmjs.org/:_authToken=${NPM_TOKEN}

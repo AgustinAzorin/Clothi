@@ -1,0 +1,26 @@
+# clothi/.npmrc.docker (opcional, para producción)
+# Configuración optimizada para contenedores
+
+registry=https://registry.npmjs.org/
+production=true
+NODE_ENV=production
+
+# Para reducir tamaño de node_modules
+omit=dev
+
+# Cache en /tmp para Docker
+cache=/tmp/.npm
+
+# Sin logs innecesarios en producción
+loglevel=warn
+progress=false
+
+# Seguridad
+ignore-scripts=true
+audit=false
+fund=false
+
+# Para Alpine Linux (si usas node:alpine)
+python=/usr/bin/python3
+make=/usr/bin/make
+g++=/usr/bin/g++
