@@ -1,23 +1,23 @@
-# Dockerfile en RAÍZ del proyecto
 FROM node:18-alpine
 
 WORKDIR /app
 
-# 1. Copiar package.json de la raíz
+# 1. Copiamos package.json y package-lock.json
 COPY package*.json ./
 
-# 2. Instalar dependencias de producción
-RUN npm ci --only=production
+# 2. Instalamos TODAS las dependencias (dev incluidas para sequelize-cli)
+RUN npm install
 
-# 3. Copiar código fuente
-COPY src/ ./apps/api/src/
-# 4. Instalar sequelize-cli globalmente
+# 3. Copiamos el código fuente al WORKDIR
+COPY . .
+
+# 4. Instalamos sequelize-cli global
 RUN npm install -g sequelize-cli
 
-# 5. Puerto
-EXPOSE 3001
-ENV PORT=3001
+# 5. Puerto y variables
 ENV NODE_ENV=production
+ENV PORT=3001
+EXPOSE 3001
 
-# 6. Comando para producción
-CMD ["sh", "-c", "npx sequelize-cli db:migrate && node src/server.js"]
+# 6. Ejecutar migraciones (la CLI ya está global)
+CMD ["sh", "-c", "sequelize-cli db:migrate && node src/server.js"]
