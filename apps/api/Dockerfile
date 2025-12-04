@@ -3,29 +3,32 @@ FROM node:18-alpine AS development
 
 WORKDIR /app
 
+# Copiar solo package.json
 COPY package*.json ./
-COPY .npmrc ./
 
-RUN npm ci --only=development
+# Instalar dependencias (incluyendo dev para desarrollo)
+RUN npm ci
 
+# Copiar el código
 COPY . .
 
 EXPOSE 3001
 
 CMD ["npm", "run", "dev"]
 
-# Builder stage
+# Builder stage (para producción)
 FROM node:18-alpine AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
-COPY .npmrc ./
 
+# Instalar todas las dependencias
 RUN npm ci
 
 COPY . .
 
+# Construir la aplicación
 RUN npm run build
 
 # Production stage
@@ -36,14 +39,16 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY package*.json ./
-COPY .npmrc ./
 
+# Instalar solo dependencias de producción
 RUN npm ci --only=production
 
+# Copiar lo construido desde la etapa builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/src/database ./src/database
 
+# Cambiar a usuario no-root por seguridad
 USER node
 
 EXPOSE 3001
