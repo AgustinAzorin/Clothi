@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Op } = require('sequelize');
 const { baseFields } = require('../shared/baseModel');
 
 module.exports = (sequelize) => {
@@ -88,24 +88,25 @@ module.exports = (sequelize) => {
     indexes: [
       {
         fields: ['product_id'],
-        where: { product_id: { [sequelize.Op.ne]: null } }
+        where: { product_id: { [Op.ne]: null } }
       },
       {
         fields: ['outfit_id'],
-        where: { outfit_id: { [sequelize.Op.ne]: null } }
+        where: { outfit_id: { [Op.ne]: null } }
       },
       {
         fields: ['post_id'],
-        where: { post_id: { [sequelize.Op.ne]: null } }
+        where: { post_id: { [Op.ne]: null } }
       },
       {
         fields: ['parent_comment_id'],
-        where: { parent_comment_id: { [sequelize.Op.ne]: null } }
+        where: { parent_comment_id: { [Op.ne]: null } }
       },
       {
         fields: ['created_at']
       }
     ]
+
   });
 
   // Función helper para actualizar contadores
