@@ -41,7 +41,7 @@ ENV NODE_ENV=production
 COPY package*.json ./
 
 # Instalar solo dependencias de producción
-RUN npm ci --only=production
+RUN npm install
 
 # Copiar lo construido desde la etapa builder
 COPY --from=builder /app/dist ./dist
