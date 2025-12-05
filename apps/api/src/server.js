@@ -9,6 +9,8 @@ const { sequelize } = require('./config/database');
 const { supabase } = require('./config/supabase');
 const { errorHandler } = require('./middleware/errorHandler');
 
+const authRoutes = require('./modules/auth/routes/authRoutes');
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -32,6 +34,11 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP'
 });
 app.use('/api/', limiter);
+
+// ======================
+//RUTAS MODULOS
+// ======================
+app.use('/api/auth', authRoutes);
 
 // ======================
 // RUTAS BÁSICAS (Health checks)
