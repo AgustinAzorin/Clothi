@@ -7,7 +7,8 @@ require('dotenv').config();
 
 const { sequelize } = require('./config/database');
 const { supabase } = require('./config/supabase');
-const errorHandler = require('./middleware/errorHandler');
+const { errorHandler } = require('./middleware/errorHandler');
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
