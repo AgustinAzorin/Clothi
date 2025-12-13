@@ -9,6 +9,7 @@ const { sequelize } = require('./config/database');
 const { supabase } = require('./config/supabase');
 const { errorHandler } = require('./middleware/errorHandler');
 
+const marketRoutes = require('./modules/marketplace/routes/recommendationRoutes');
 const authRoutes = require('./modules/auth/routes/authRoutes');
 
 
@@ -39,6 +40,7 @@ app.use('/api/', limiter);
 //RUTAS MODULOS
 // ======================
 app.use('/api/auth', authRoutes);
+app.use("api/marketpalce", marketRoutes);
 
 // ======================
 // RUTAS BÁSICAS (Health checks)
