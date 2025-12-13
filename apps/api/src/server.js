@@ -40,7 +40,7 @@ app.use('/api/', limiter);
 //RUTAS MODULOS
 // ======================
 app.use('/api/auth', authRoutes);
-app.use("api/marketpalce", marketRoutes);
+app.use("/api/marketpalce", marketRoutes);
 
 // ======================
 // RUTAS BÁSICAS (Health checks)
