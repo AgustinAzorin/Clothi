@@ -6,9 +6,10 @@ class AuthService {
    * Registrar nuevo usuario
    */
   static async register(userData) {
+    let authData = null;
     try {
       // 1. Registrar en Supabase Auth
-      const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
+      const { data: authDataResponse, error: authError } = await supabaseAdmin.auth.signUp({
         email: userData.email,
         password: userData.password,
         options: {
@@ -18,6 +19,8 @@ class AuthService {
           }
         }
       });
+
+      authData = authDataResponse;
 
       if (authError) {
         throw new Error(authError.message);
@@ -34,7 +37,7 @@ class AuthService {
       });
 
       // 3. Generar token JWT
-      const { data: { session }, error: sessionError } = await supabaseAdmin.auth.signInWithPassword({
+      const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.signInWithPassword({
         email: userData.email,
         password: userData.password,
       });
@@ -45,8 +48,8 @@ class AuthService {
 
       return {
         user: profile,
-        token: session.access_token,
-        refresh_token: session.refresh_token,
+        token: sessionData.session.access_token,
+        refresh_token: sessionData.session.refresh_token,
       };
     } catch (error) {
       // Si hay error, intentar limpiar

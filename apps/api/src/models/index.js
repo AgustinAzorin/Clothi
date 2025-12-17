@@ -25,6 +25,10 @@ const UserProfile = require('./userProfile')(sequelize, Sequelize);
 const Product = require('./product')(sequelize, Sequelize);
 const ProductAsset = require('./productAsset')(sequelize, Sequelize);
 const Category = require('./category')(sequelize, Sequelize);
+const Tag = require('./tag')(sequelize, Sequelize);
+const ProductTag = require('./productTag')(sequelize, Sequelize);
+const Brand = require('./brand')(sequelize, Sequelize);
+const ProductBrand = require('./productBrand')(sequelize, Sequelize);
 const Outfit = require('./outfit')(sequelize, Sequelize);
 const OutfitItem = require('./outfitItem')(sequelize, Sequelize);
 const Post = require('./post')(sequelize, Sequelize);
@@ -40,6 +44,10 @@ require('./associations')({
   Product,
   ProductAsset,
   Category,
+  Tag,
+  ProductTag,
+  Brand,
+  ProductBrand,
   Outfit,
   OutfitItem,
   Post,
@@ -58,6 +66,10 @@ module.exports = {
   Product,
   ProductAsset,
   Category,
+  Tag,
+  ProductTag,
+  Brand,
+  ProductBrand,
   Outfit,
   OutfitItem,
   Post,
