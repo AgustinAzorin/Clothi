@@ -4,11 +4,17 @@ module.exports = (models) => {
     Product,
     ProductAsset,
     Category,
+    Tag,
+    ProductTag,
+    Brand,
+    ProductBrand,
     Outfit,
     OutfitItem,
     Post,
     Like,
     Comment,
+    Rating,
+    Share,
     Follow,
     Order,
     OrderItem,
@@ -21,6 +27,8 @@ module.exports = (models) => {
   UserProfile.hasMany(Post, { foreignKey: 'user_id', as: 'posts' });
   UserProfile.hasMany(Like, { foreignKey: 'user_id', as: 'likes' });
   UserProfile.hasMany(Comment, { foreignKey: 'user_id', as: 'comments' });
+  UserProfile.hasMany(Rating, { foreignKey: 'user_id', as: 'ratings' });
+  UserProfile.hasMany(Share, { foreignKey: 'user_id', as: 'shares' });
   UserProfile.hasMany(Order, { foreignKey: 'buyer_id', as: 'orders' });
   
   // Follow associations (self-referential)
@@ -45,7 +53,11 @@ module.exports = (models) => {
   Product.hasMany(OutfitItem, { foreignKey: 'product_id', as: 'outfitItems' });
   Product.hasMany(Like, { foreignKey: 'product_id', as: 'likes' });
   Product.hasMany(Comment, { foreignKey: 'product_id', as: 'comments' });
+  Product.hasMany(Rating, { foreignKey: 'product_id', as: 'ratings' });
+  Product.hasMany(Share, { foreignKey: 'product_id', as: 'shares' });
   Product.hasMany(OrderItem, { foreignKey: 'product_id', as: 'orderItems' });
+  Product.belongsToMany(Tag, { through: ProductTag, as: 'tags' });
+  Product.belongsToMany(Brand, { through: ProductBrand, as: 'brands' });
 
   // ProductAsset associations
   ProductAsset.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
@@ -54,6 +66,22 @@ module.exports = (models) => {
   Category.hasMany(Product, { foreignKey: 'category_id', as: 'products' });
   Category.belongsTo(Category, { foreignKey: 'parent_category_id', as: 'parent' });
   Category.hasMany(Category, { foreignKey: 'parent_category_id', as: 'subcategories' });
+
+  // Tag associations
+  Tag.belongsToMany(Product, { through: ProductTag, as: 'products' });
+  Tag.hasMany(ProductTag, { foreignKey: 'tag_id', as: 'productTags' });
+
+  // Brand associations
+  Brand.belongsToMany(Product, { through: ProductBrand, as: 'products' });
+  Brand.hasMany(ProductBrand, { foreignKey: 'brand_id', as: 'productBrands' });
+
+  // ProductTag associations
+  ProductTag.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+  ProductTag.belongsTo(Tag, { foreignKey: 'tag_id', as: 'tag' });
+
+  // ProductBrand associations
+  ProductBrand.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+  ProductBrand.belongsTo(Brand, { foreignKey: 'brand_id', as: 'brand' });
 
   // Outfit associations
   Outfit.belongsTo(UserProfile, { foreignKey: 'user_id', as: 'user' });
@@ -85,6 +113,17 @@ module.exports = (models) => {
   Comment.belongsTo(Post, { foreignKey: 'post_id', as: 'post' });
   Comment.belongsTo(Comment, { foreignKey: 'parent_comment_id', as: 'parent' });
   Comment.hasMany(Comment, { foreignKey: 'parent_comment_id', as: 'replies' });
+
+  // Rating associations
+  Rating.belongsTo(UserProfile, { foreignKey: 'user_id', as: 'user' });
+  Rating.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+
+  // Share associations
+  Share.belongsTo(UserProfile, { foreignKey: 'user_id', as: 'user' });
+  Share.belongsTo(UserProfile, { foreignKey: 'shared_with_user_id', as: 'sharedWith' });
+  Share.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+  Share.belongsTo(Outfit, { foreignKey: 'outfit_id', as: 'outfit' });
+  Share.belongsTo(Post, { foreignKey: 'post_id', as: 'post' });
 
   // Order associations
   Order.belongsTo(UserProfile, { foreignKey: 'buyer_id', as: 'buyer' });

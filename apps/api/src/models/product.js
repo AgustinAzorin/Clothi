@@ -150,15 +150,40 @@ module.exports = (sequelize) => {
         min: 0
       }
     },
+    comment_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: {
+        min: 0
+      }
+    },
+    share_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: {
+        min: 0
+      }
+    },
+    average_rating: {
+      type: DataTypes.DECIMAL(3, 2),
+      defaultValue: 0,
+      validate: {
+        min: 0,
+        max: 5
+      }
+    },
+    rating_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: {
+        min: 0
+      }
+    },
     // SEO
     slug: {
       type: DataTypes.STRING(255),
       allowNull: false,
       unique: true
-    },
-    tags: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: []
     }
   }, {
     tableName: 'products',

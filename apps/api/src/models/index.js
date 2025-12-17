@@ -34,6 +34,8 @@ const OutfitItem = require('./outfitItem')(sequelize, Sequelize);
 const Post = require('./post')(sequelize, Sequelize);
 const Like = require('./like')(sequelize, Sequelize);
 const Comment = require('./comment')(sequelize, Sequelize);
+const Rating = require('./rating')(sequelize, Sequelize);
+const Share = require('./share')(sequelize, Sequelize);
 const Follow = require('./follow')(sequelize, Sequelize);
 const Order = require('./order')(sequelize, Sequelize);
 const OrderItem = require('./orderItem')(sequelize, Sequelize);
@@ -53,6 +55,8 @@ require('./associations')({
   Post,
   Like,
   Comment,
+  Rating,
+  Share,
   Follow,
   Order,
   OrderItem,
@@ -75,6 +79,8 @@ module.exports = {
   Post,
   Like,
   Comment,
+  Rating,
+  Share,
   Follow,
   Order,
   OrderItem

@@ -11,6 +11,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 const marketRoutes = require('./modules/marketplace/routes/recommendationRoutes');
 const authRoutes = require('./modules/auth/routes/authRoutes');
+const productRoutes = require('./modules/products/routes/productRoutes');
 
 
 const app = express();
@@ -41,6 +42,7 @@ app.use('/api/', limiter);
 // ======================
 app.use('/api/auth', authRoutes);
 app.use("/api/marketpalce", marketRoutes);
+app.use('/api/products', productRoutes);
 
 // ======================
 // RUTAS BÁSICAS (Health checks)

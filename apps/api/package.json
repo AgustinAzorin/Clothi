@@ -8,7 +8,6 @@
     "test": "jest --verbose --coverage",
     "test:watch": "jest --watch",
     "test:auth": "jest tests/auth.test.js",
-    
     "db:migrate": "npx sequelize-cli db:migrate",
     "db:migrate:undo": "npx sequelize-cli db:migrate:undo",
     "db:seed": "npx sequelize-cli db:seed:all",
@@ -35,6 +34,7 @@
     "sequelize": "^6.33.0",
     "slugify": "^1.6.6",
     "stripe": "^14.14.0",
+    "uuid": "^13.0.0",
     "winston": "^3.11.0",
     "zod": "^3.22.4"
   },
